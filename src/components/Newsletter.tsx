@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, CheckCircle, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const emailSchema = z.string().email({ message: "Please enter a valid email address" });
 
@@ -13,6 +14,7 @@ const Newsletter = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("weekly");
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   
@@ -50,7 +52,7 @@ const Newsletter = () => {
       setSubmitted(true);
       toast({
         title: "Successfully subscribed!",
-        description: "You've joined our exclusive circle of trendsetters.",
+        description: `You've joined our ${activeTab} updates.`,
       });
       
       // Reset form after 3 seconds
@@ -71,19 +73,36 @@ const Newsletter = () => {
   };
   
   return (
-    <section className="py-16 relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
+    <section className="py-8 md:py-16 relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
       <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 via-pink-500/10 to-red-500/10 opacity-50"></div>
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-8 md:p-12 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+          <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-6 md:p-12 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
             <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-red-600">
+              <h2 className="text-2xl md:text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-red-600">
                 Join Our Style Community
               </h2>
-              <p className="text-slate-600 dark:text-slate-300 text-lg mb-6">
+              <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg mb-6">
                 Get exclusive access to new collections, personalized recommendations, and special offers.
               </p>
+              
+              <Tabs defaultValue="weekly" className="w-full mb-6" onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto">
+                  <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                  <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                  <TabsTrigger value="seasonal">Seasonal</TabsTrigger>
+                </TabsList>
+                <TabsContent value="weekly" className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+                  Receive our curated style updates every week with fresh trends and exclusive deals.
+                </TabsContent>
+                <TabsContent value="monthly" className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+                  Get a monthly digest of the biggest fashion trends and special subscriber-only offers.
+                </TabsContent>
+                <TabsContent value="seasonal" className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+                  Stay updated with seasonal collections and major fashion events four times a year.
+                </TabsContent>
+              </Tabs>
               
               <form ref={formRef} onSubmit={handleSubmit} className="relative max-w-md mx-auto">
                 <div className={`flex items-center overflow-hidden bg-white dark:bg-slate-900 rounded-lg border ${error ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'} transition-all hover:border-primary focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/30`}>
@@ -107,12 +126,14 @@ const Newsletter = () => {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        <span>Subscribing</span>
+                        <span className="hidden sm:inline">Subscribing</span>
+                        <span className="sm:hidden">...</span>
                       </>
                     ) : submitted ? (
                       <>
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        <span>Subscribed</span>
+                        <span className="hidden sm:inline">Subscribed</span>
+                        <span className="sm:hidden">Done</span>
                       </>
                     ) : (
                       <span>Subscribe</span>
@@ -128,18 +149,18 @@ const Newsletter = () => {
               </form>
             </div>
             
-            <div className="flex flex-wrap justify-center gap-6 mt-12">
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-700/50 px-4 py-2 rounded-full">
+            <div className="flex flex-wrap justify-center gap-3 md:gap-6 mt-12">
+              <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-700/50 px-3 py-2 md:px-4 md:py-2 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                <span className="text-slate-700 dark:text-slate-200">Weekly style tips</span>
+                <span className="text-sm md:text-base text-slate-700 dark:text-slate-200">Weekly style tips</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-700/50 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-700/50 px-3 py-2 md:px-4 md:py-2 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                <span className="text-slate-700 dark:text-slate-200">Early access to drops</span>
+                <span className="text-sm md:text-base text-slate-700 dark:text-slate-200">Early access</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-700/50 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-700/50 px-3 py-2 md:px-4 md:py-2 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                <span className="text-slate-700 dark:text-slate-200">Exclusive offers</span>
+                <span className="text-sm md:text-base text-slate-700 dark:text-slate-200">Exclusive offers</span>
               </div>
             </div>
             

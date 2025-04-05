@@ -36,10 +36,10 @@ const defaultProduct = {
   price: 29.99,
   description: "Crafted from high-quality 100% organic cotton, this premium t-shirt offers exceptional comfort and durability. The breathable fabric ensures all-day comfort, while the modern fit complements any style. Perfect for casual outings or relaxed days at home.",
   images: [
-    "https://i.imgur.com/JFHjdNr.jpeg",
-    "https://i.imgur.com/kGu7c6H.jpeg",
-    "https://i.imgur.com/2zcsO9y.jpeg",
-    "https://i.imgur.com/6oGHzG8.jpeg"
+    "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1000",
+    "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=1000",
+    "https://images.unsplash.com/photo-1554568218-0f1715e72254?q=80&w=1000",
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1000"
   ],
   rating: 4.8,
   reviews: 124,
@@ -80,7 +80,7 @@ const ProductDetail = ({ product = defaultProduct }: ProductDetailProps) => {
   };
 
   return (
-    <section className="py-12">
+    <section className="py-8 md:py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Product Images */}
@@ -119,7 +119,7 @@ const ProductDetail = ({ product = defaultProduct }: ProductDetailProps) => {
               <span>T-Shirts</span>
             </div>
             
-            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">{product.name}</h1>
             
             <div className="flex items-center gap-2 mb-4">
               <div className="flex items-center">
@@ -138,18 +138,18 @@ const ProductDetail = ({ product = defaultProduct }: ProductDetailProps) => {
             
             <div className="mb-6">
               <h3 className="font-medium mb-2">Description</h3>
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base">
                 {product.description}
               </p>
             </div>
             
             <div className="mb-6">
               <h3 className="font-medium mb-2">Color</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {product.colors.map(color => (
                   <button
                     key={color}
-                    className={`px-4 py-2 rounded-md border ${selectedColor === color ? 'border-primary bg-primary/10' : 'border-slate-200 dark:border-slate-700'}`}
+                    className={`px-3 md:px-4 py-2 rounded-md border text-sm ${selectedColor === color ? 'border-primary bg-primary/10' : 'border-slate-200 dark:border-slate-700'}`}
                     onClick={() => setSelectedColor(color)}
                   >
                     {color}
@@ -160,11 +160,11 @@ const ProductDetail = ({ product = defaultProduct }: ProductDetailProps) => {
             
             <div className="mb-6">
               <h3 className="font-medium mb-2">Size</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {product.sizes.map(size => (
                   <button
                     key={size}
-                    className={`w-12 h-12 flex items-center justify-center rounded-md border ${selectedSize === size ? 'border-primary bg-primary/10' : 'border-slate-200 dark:border-slate-700'}`}
+                    className={`w-10 md:w-12 h-10 md:h-12 flex items-center justify-center rounded-md border text-sm ${selectedSize === size ? 'border-primary bg-primary/10' : 'border-slate-200 dark:border-slate-700'}`}
                     onClick={() => setSelectedSize(size)}
                   >
                     {size}
@@ -192,7 +192,8 @@ const ProductDetail = ({ product = defaultProduct }: ProductDetailProps) => {
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Cart
+                <span className="hidden sm:inline">Add to Cart</span>
+                <span className="sm:hidden">Add</span>
               </Button>
               <Button 
                 variant="outline" 

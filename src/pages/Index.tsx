@@ -8,6 +8,8 @@ import Newsletter from "@/components/Newsletter";
 import ProductDetail from "@/components/ProductDetail";
 import ShoppingCart from "@/components/ShoppingCart";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Search, User, Heart, Menu, X } from "lucide-react";
 import {
   Sheet,
@@ -15,9 +17,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+const categories = [
+  { id: "all", name: "All Products" },
+  { id: "womens", name: "Women's Fashion" },
+  { id: "mens", name: "Men's Fashion" },
+  { id: "accessories", name: "Accessories" },
+  { id: "footwear", name: "Footwear" }
+];
+
 const Index = () => {
   const [showProductDetail, setShowProductDetail] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const toggleProductDetail = () => {
     setShowProductDetail(!showProductDetail);
@@ -31,6 +43,14 @@ const Index = () => {
         });
       }, 100);
     }
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+    toast({
+      title: `Category Changed`,
+      description: `Now showing ${category === "all" ? "all products" : categories.find(c => c.id === category)?.name}`,
+    });
   };
 
   return (
@@ -92,12 +112,46 @@ const Index = () => {
         <HeroSection />
         
         <section className="py-8 container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Latest Products</h2>
-            <Button onClick={toggleProductDetail}>
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold mb-4 md:mb-0">Browse Our Collection</h2>
+            <Button onClick={toggleProductDetail} className="w-full md:w-auto">
               {showProductDetail ? "Hide Details" : "View Product Details"}
             </Button>
           </div>
+          
+          <Tabs 
+            defaultValue="all" 
+            value={activeCategory} 
+            onValueChange={handleCategoryChange}
+            className="w-full mb-8"
+          >
+            <TabsList className={`w-full ${isMobile ? 'grid grid-cols-2 gap-1' : 'flex'} mb-6 overflow-x-auto`}>
+              {categories.map(category => (
+                <TabsTrigger 
+                  key={category.id} 
+                  value={category.id}
+                  className={`${isMobile ? 'py-2 px-1 text-sm mb-1' : ''}`}
+                >
+                  {category.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            
+            {categories.map(category => (
+              <TabsContent key={category.id} value={category.id} className="mt-0">
+                {category.id === "all" && (
+                  <div className="text-center text-slate-600 dark:text-slate-400 mb-4">
+                    Showing all products across categories
+                  </div>
+                )}
+                {category.id !== "all" && (
+                  <div className="text-center text-slate-600 dark:text-slate-400 mb-4">
+                    Showing {category.name} collection
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
         </section>
         
         {showProductDetail && (
@@ -111,7 +165,7 @@ const Index = () => {
         <Newsletter />
       </main>
 
-      <footer className="bg-slate-900 text-white py-12">
+      <footer className="bg-slate-900 text-white py-10">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -136,7 +190,7 @@ const Index = () => {
             </div>
             <div>
               <h3 className="font-semibold mb-4">Connect</h3>
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-4">
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Instagram</a>
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Facebook</a>
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Twitter</a>
