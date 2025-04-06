@@ -16,6 +16,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import AIAssistant from "@/components/AIAssistant";
 
 const categories = [
   { id: "all", name: "All Products" },
@@ -28,8 +29,20 @@ const categories = [
 const Index = () => {
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [showChatbot, setShowChatbot] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
+  const featuredRef = useRef<HTMLDivElement>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
+  
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref && ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   
   const toggleProductDetail = () => {
     setShowProductDetail(!showProductDetail);
@@ -53,6 +66,10 @@ const Index = () => {
     });
   };
 
+  const toggleChatbot = () => {
+    setShowChatbot(!showChatbot);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header/Navigation */}
@@ -65,11 +82,11 @@ const Index = () => {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              <Button variant="link" className="text-foreground">Home</Button>
-              <Button variant="link" className="text-foreground">Shop</Button>
-              <Button variant="link" className="text-foreground">Collections</Button>
-              <Button variant="link" className="text-foreground">About</Button>
-              <Button variant="link" className="text-foreground">Contact</Button>
+              <Button variant="link" className="text-foreground" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Button>
+              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(featuredRef)}>Shop</Button>
+              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(categoriesRef)}>Collections</Button>
+              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(aboutRef)}>About</Button>
+              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(contactRef)}>Contact</Button>
             </div>
             
             {/* Mobile Navigation */}
@@ -82,11 +99,11 @@ const Index = () => {
                 </SheetTrigger>
                 <SheetContent side="left">
                   <div className="flex flex-col space-y-4 mt-8">
-                    <Button variant="ghost" className="justify-start">Home</Button>
-                    <Button variant="ghost" className="justify-start">Shop</Button>
-                    <Button variant="ghost" className="justify-start">Collections</Button>
-                    <Button variant="ghost" className="justify-start">About</Button>
-                    <Button variant="ghost" className="justify-start">Contact</Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(featuredRef)}>Shop</Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(categoriesRef)}>Collections</Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(aboutRef)}>About</Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(contactRef)}>Contact</Button>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -103,6 +120,14 @@ const Index = () => {
                 <Heart className="h-5 w-5" />
               </Button>
               <ShoppingCart />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="ml-2 hidden md:flex"
+                onClick={toggleChatbot}
+              >
+                {showChatbot ? "Hide AI" : "Shop Assistant"}
+              </Button>
             </div>
           </div>
         </div>
@@ -160,10 +185,78 @@ const Index = () => {
           </div>
         )}
         
-        <FeaturedProducts />
-        <ProductCategories />
+        <div ref={featuredRef}>
+          <FeaturedProducts />
+        </div>
+        
+        <div ref={categoriesRef}>
+          <ProductCategories />
+        </div>
+        
+        <div ref={aboutRef} className="py-16 bg-slate-50 dark:bg-slate-800/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl font-bold mb-6">About DebutiStyle</h2>
+              <p className="text-lg text-slate-700 dark:text-slate-300 mb-8">
+                DebutiStyle is a premium fashion destination offering curated collections of high-quality, sustainable clothing and accessories. We believe in timeless style, ethical production, and making fashion accessible to everyone.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
+                  <h3 className="font-semibold text-xl mb-3">Our Mission</h3>
+                  <p className="text-slate-600 dark:text-slate-400">To provide exceptional quality fashion that empowers individuals to express their unique style while promoting sustainability.</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
+                  <h3 className="font-semibold text-xl mb-3">Our Values</h3>
+                  <p className="text-slate-600 dark:text-slate-400">Quality, sustainability, ethical production, and customer satisfaction are at the core of everything we do.</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
+                  <h3 className="font-semibold text-xl mb-3">Our Promise</h3>
+                  <p className="text-slate-600 dark:text-slate-400">We're committed to offering premium products, exceptional service, and a seamless shopping experience.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <Newsletter />
+        
+        <div ref={contactRef} className="py-16 bg-white dark:bg-slate-900">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl font-bold mb-6 text-center">Contact Us</h2>
+              <p className="text-center text-slate-600 dark:text-slate-400 mb-8">
+                Have questions or feedback? We'd love to hear from you!
+              </p>
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Your Name</label>
+                    <input type="text" className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email Address</label>
+                    <input type="email" className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Subject</label>
+                  <input type="text" className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Message</label>
+                  <textarea rows={5} className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
+                </div>
+                <div>
+                  <Button className="w-full">Send Message</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </main>
+
+      {/* AI Chatbot Component */}
+      {showChatbot && <AIAssistant onClose={toggleChatbot} />}
 
       <footer className="bg-slate-900 text-white py-10">
         <div className="container mx-auto px-4">

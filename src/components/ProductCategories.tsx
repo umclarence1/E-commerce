@@ -6,25 +6,25 @@ const categories = [
   {
     id: 1,
     name: "Women's Fashion",
-    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000",
+    image: "https://images.unsplash.com/photo-1525299374597-911581e1bdef?q=80&w=1000",
     count: 245
   },
   {
     id: 2,
     name: "Men's Fashion",
-    image: "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?q=80&w=1000",
+    image: "https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=1000",
     count: 156
   },
   {
     id: 3,
     name: "Jewelry & Accessories",
-    image: "https://images.unsplash.com/photo-1576053139778-7e32f2ae3cfd?q=80&w=1000",
+    image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1000",
     count: 78
   },
   {
     id: 4,
     name: "Electronics",
-    image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1000",
+    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000",
     count: 92
   }
 ];
