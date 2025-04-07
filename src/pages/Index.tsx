@@ -7,6 +7,8 @@ import ProductCategories from "@/components/ProductCategories";
 import Newsletter from "@/components/Newsletter";
 import ProductDetail from "@/components/ProductDetail";
 import ShoppingCart from "@/components/ShoppingCart";
+import SearchDialog from "@/components/SearchDialog";
+import WishlistDialog from "@/components/WishlistDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -77,7 +79,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">DebutiStyle</h1>
+              <h1 className="text-2xl font-bold text-primary">DeButify</h1>
             </div>
             
             {/* Desktop Navigation */}
@@ -110,15 +112,11 @@ const Index = () => {
             </div>
             
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon" onClick={() => toast({ title: "Search coming soon!" })}>
-                <Search className="h-5 w-5" />
-              </Button>
+              <SearchDialog />
               <Button variant="ghost" size="icon" onClick={() => toast({ title: "User account coming soon!" })}>
                 <User className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => toast({ title: "Wishlist coming soon!" })}>
-                <Heart className="h-5 w-5" />
-              </Button>
+              <WishlistDialog />
               <ShoppingCart />
               <Button 
                 variant="outline" 
@@ -196,9 +194,9 @@ const Index = () => {
         <div ref={aboutRef} className="py-16 bg-slate-50 dark:bg-slate-800/30">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold mb-6">About DebutiStyle</h2>
+              <h2 className="text-3xl font-bold mb-6">About DeButify</h2>
               <p className="text-lg text-slate-700 dark:text-slate-300 mb-8">
-                DebutiStyle is a premium fashion destination offering curated collections of high-quality, sustainable clothing and accessories. We believe in timeless style, ethical production, and making fashion accessible to everyone.
+                DeButify is a premium fashion destination offering curated collections of high-quality, sustainable clothing and accessories. We believe in timeless style, ethical production, and making fashion accessible to everyone.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
@@ -262,7 +260,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h2 className="text-xl font-bold mb-4">DebutiStyle</h2>
+              <h2 className="text-xl font-bold mb-4">DeButify</h2>
               <p className="text-slate-300">Your premium shopping destination for stylish and affordable products.</p>
             </div>
             <div>
@@ -291,7 +289,7 @@ const Index = () => {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-slate-800 text-center text-slate-400">
-            <p>&copy; {new Date().getFullYear()} DebutiStyle. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} DeButify. All rights reserved.</p>
           </div>
         </div>
       </footer>

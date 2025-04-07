@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   ShoppingCart as CartIcon, 
@@ -41,23 +41,78 @@ const initialCartItems = [
   }
 ];
 
+// Create a global cart state
+let globalCartItems = [...initialCartItems];
+let globalCartListeners: Function[] = [];
+
+// Function to update global cart
+export const updateGlobalCart = (items: typeof initialCartItems) => {
+  globalCartItems = [...items];
+  globalCartListeners.forEach(listener => listener(globalCartItems));
+};
+
+// Function to add item to cart
+export const addToCart = (product: any) => {
+  const existingItemIndex = globalCartItems.findIndex(item => item.id === product.id);
+  
+  if (existingItemIndex >= 0) {
+    // If item exists, increase quantity
+    const updatedItems = [...globalCartItems];
+    updatedItems[existingItemIndex] = {
+      ...updatedItems[existingItemIndex],
+      quantity: updatedItems[existingItemIndex].quantity + 1
+    };
+    updateGlobalCart(updatedItems);
+  } else {
+    // If item doesn't exist, add it with quantity 1
+    const newItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      color: product.color || "Default",
+      size: product.size || "One Size",
+      quantity: 1,
+      image: product.image
+    };
+    updateGlobalCart([...globalCartItems, newItem]);
+  }
+  
+  return true;
+};
+
 const ShoppingCart = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [cartItems, setCartItems] = useState(globalCartItems);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+
+  // Subscribe to global cart changes
+  useEffect(() => {
+    const handleCartChange = (items: typeof initialCartItems) => {
+      setCartItems([...items]);
+    };
+    
+    globalCartListeners.push(handleCartChange);
+    
+    return () => {
+      globalCartListeners = globalCartListeners.filter(listener => listener !== handleCartChange);
+    };
+  }, []);
 
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     
-    setCartItems(items => 
-      items.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
+    const updatedItems = cartItems.map(item => 
+      item.id === id ? { ...item, quantity: newQuantity } : item
     );
+    
+    setCartItems(updatedItems);
+    updateGlobalCart(updatedItems);
   };
 
   const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+    const updatedItems = cartItems.filter(item => item.id !== id);
+    setCartItems(updatedItems);
+    updateGlobalCart(updatedItems);
     
     toast({
       title: "Item removed",
@@ -67,6 +122,7 @@ const ShoppingCart = () => {
 
   const clearCart = () => {
     setCartItems([]);
+    updateGlobalCart([]);
     
     toast({
       title: "Cart cleared",
