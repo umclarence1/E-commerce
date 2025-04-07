@@ -1,7 +1,6 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import ProductCategories from "@/components/ProductCategories";
@@ -15,12 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Search, User, Heart, Menu, X } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AIAssistant from "@/components/AIAssistant";
+import { authStore } from "@/utils/authUtils";
 
 const categories = [
   { id: "all", name: "All Products" },
@@ -30,18 +26,32 @@ const categories = [
   { id: "footwear", name: "Footwear" }
 ];
 
+const productsByCategory = {
+  all: [1, 2, 3, 4, 5, 6],
+  womens: [1, 5],
+  mens: [2, 6],
+  accessories: [3, 4],
+  footwear: [6]
+};
+
 const Index = () => {
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [filteredProducts, setFilteredProducts] = useState(productsByCategory.all);
   const [showChatbot, setShowChatbot] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
   const featuredRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    setFilteredProducts(productsByCategory[activeCategory as keyof typeof productsByCategory] || []);
+  }, [activeCategory]);
   
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
     if (ref && ref.current) {
@@ -52,7 +62,6 @@ const Index = () => {
   const toggleProductDetail = () => {
     setShowProductDetail(!showProductDetail);
     
-    // Scroll to product detail if opening
     if (!showProductDetail) {
       setTimeout(() => {
         document.getElementById('product-detail')?.scrollIntoView({ 
@@ -70,6 +79,16 @@ const Index = () => {
       description: `Now showing ${category === "all" ? "all products" : categories.find(c => c.id === category)?.name}`,
     });
   };
+  
+  const navigateToCategory = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    scrollToSection(featuredRef);
+    
+    toast({
+      title: "Category Selected",
+      description: `Browsing ${categories.find(c => c.id === categoryId)?.name || 'All Products'}`,
+    });
+  };
 
   const toggleChatbot = () => {
     setShowChatbot(!showChatbot);
@@ -79,9 +98,16 @@ const Index = () => {
     setShowUserProfile(!showUserProfile);
   };
 
+  const handleAdminNavigation = () => {
+    if (authStore.isAdmin()) {
+      navigate("/admin");
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header/Navigation */}
       <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -89,7 +115,6 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-primary">DeButify</h1>
             </div>
             
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
               <Button variant="link" className="text-foreground" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Button>
               <Button variant="link" className="text-foreground" onClick={() => scrollToSection(featuredRef)}>Shop</Button>
@@ -98,7 +123,6 @@ const Index = () => {
               <Button variant="link" className="text-foreground" onClick={() => scrollToSection(contactRef)}>Contact</Button>
             </div>
             
-            {/* Mobile Navigation */}
             <div className="md:hidden">
               <Sheet>
                 <SheetTrigger asChild>
@@ -113,13 +137,13 @@ const Index = () => {
                     <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(categoriesRef)}>Collections</Button>
                     <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(aboutRef)}>About</Button>
                     <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(contactRef)}>Contact</Button>
-                    <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
-                      <Link to="/admin">
-                        <Button variant="ghost" className="justify-start w-full">
+                    {authStore.isAdmin() && (
+                      <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                        <Button variant="ghost" className="justify-start w-full" onClick={handleAdminNavigation}>
                           Admin Dashboard
                         </Button>
-                      </Link>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>
@@ -145,13 +169,13 @@ const Index = () => {
                 {showChatbot ? "Hide AI" : "Shop Assistant"}
               </Button>
               
-              <div className="hidden md:block ml-2">
-                <Link to="/admin">
-                  <Button variant="ghost" size="sm">
+              {authStore.isAdmin() && (
+                <div className="hidden md:block ml-2">
+                  <Button variant="ghost" size="sm" onClick={handleAdminNavigation}>
                     Admin
                   </Button>
-                </Link>
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -188,16 +212,11 @@ const Index = () => {
             
             {categories.map(category => (
               <TabsContent key={category.id} value={category.id} className="mt-0">
-                {category.id === "all" && (
-                  <div className="text-center text-slate-600 dark:text-slate-400 mb-4">
-                    Showing all products across categories
-                  </div>
-                )}
-                {category.id !== "all" && (
-                  <div className="text-center text-slate-600 dark:text-slate-400 mb-4">
-                    Showing {category.name} collection
-                  </div>
-                )}
+                <div className="text-center text-slate-600 dark:text-slate-400 mb-4">
+                  {category.id === "all" 
+                    ? "Showing all products across categories" 
+                    : `Showing ${category.name} collection - ${productsByCategory[category.id as keyof typeof productsByCategory]?.length || 0} products`}
+                </div>
               </TabsContent>
             ))}
           </Tabs>
@@ -210,11 +229,11 @@ const Index = () => {
         )}
         
         <div ref={featuredRef}>
-          <FeaturedProducts />
+          <FeaturedProducts activeCategory={activeCategory} filteredProductIds={filteredProducts} />
         </div>
         
         <div ref={categoriesRef}>
-          <ProductCategories />
+          <ProductCategories onCategoryClick={navigateToCategory} />
         </div>
         
         <div ref={aboutRef} className="py-16 bg-slate-50 dark:bg-slate-800/30">
@@ -285,10 +304,8 @@ const Index = () => {
         </div>
       </main>
 
-      {/* AI Chatbot Component */}
       {showChatbot && <AIAssistant onClose={toggleChatbot} />}
       
-      {/* User Profile Dialog */}
       {showUserProfile && <UserProfile onClose={() => setShowUserProfile(false)} />}
 
       <footer className="bg-slate-900 text-white py-10">

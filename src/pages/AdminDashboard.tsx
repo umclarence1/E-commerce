@@ -1,14 +1,22 @@
-
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { ArrowUpRight, Users, ShoppingBag, MessageSquare, BarChart3 } from "lucide-react";
+import { ArrowUpRight, Users, ShoppingBag, MessageSquare, BarChart3, LogOut, Shield } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { authStore } from "@/utils/authUtils";
 
-// Mock database for products, users, messages, and orders
 const mockDatabase = {
   users: [
     { id: 1, name: "John Doe", email: "john@example.com", dateJoined: "2023-10-15" },
@@ -39,6 +47,27 @@ const AdminDashboard = () => {
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authStore.isAdmin()) {
+      navigate("/login");
+      toast({
+        title: "Access Denied",
+        description: "You don't have admin privileges.",
+        variant: "destructive",
+      });
+    }
+  }, [navigate, toast]);
+
+  const handleLogout = () => {
+    authStore.logout();
+    navigate("/login");
+    toast({
+      title: "Logged out",
+      description: "You have been logged out of the admin panel.",
+    });
+  };
 
   const handleMarkAsRead = (messageId: number) => {
     setMessages(messages.map(message => 
@@ -60,7 +89,6 @@ const AdminDashboard = () => {
   };
 
   const sendReply = (email: string) => {
-    // In a real application, this would send an email
     toast({
       title: "Reply sent",
       description: `Your reply has been sent to ${email}.`,
@@ -75,9 +103,27 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-primary">DeButify Admin</h1>
-            <Button variant="outline" onClick={() => window.location.href = "/"}>
-              Return to Site
-            </Button>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Admin
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setActiveTab("settings")}>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
@@ -131,6 +177,14 @@ const AdminDashboard = () => {
                     {messages.filter(m => !m.read).length}
                   </span>
                 )}
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 mt-8" 
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
               </Button>
             </nav>
           </div>

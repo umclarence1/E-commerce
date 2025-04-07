@@ -14,14 +14,14 @@ import {
 import { addToCart } from "./ShoppingCart";
 import { wishlistStore } from "./WishlistDialog";
 
-// Mock product data for Ghana-specific items
+// Mock product data for Ghana-specific items with improved images
 const products = [
   {
     id: 1,
     name: "Ankara Print T-Shirt",
     price: 39.99,
     image: "https://images.unsplash.com/photo-1563630423918-b58f07336ac5?q=80&w=1000",
-    category: "Clothing",
+    category: "womens",
     color: "Multicolor",
     size: "M",
     isNew: true
@@ -31,7 +31,7 @@ const products = [
     name: "Kente Pocket Square",
     price: 29.99,
     image: "https://images.unsplash.com/photo-1596363505729-4190a9506133?q=80&w=1000",
-    category: "Accessories",
+    category: "mens",
     color: "Traditional",
     size: "One Size",
     isNew: true
@@ -41,7 +41,7 @@ const products = [
     name: "Handcrafted Leather Bag",
     price: 79.99,
     image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=1000",
-    category: "Accessories",
+    category: "accessories",
     color: "Brown",
     size: "One Size",
     isNew: false
@@ -51,19 +51,19 @@ const products = [
     name: "African Print Face Mask",
     price: 12.99,
     image: "https://images.unsplash.com/photo-1598887142487-3c854d2171c7?q=80&w=1000",
-    category: "Accessories",
+    category: "accessories",
     color: "Mixed",
     size: "One Size",
     isNew: false
   },
   {
     id: 5,
-    name: "Bamboo Sunglasses",
-    price: 59.99,
-    image: "https://images.unsplash.com/photo-1572635196237-14b3f281ef11?q=80&w=1000",
-    category: "Accessories",
-    color: "Wood Brown",
-    size: "One Size",
+    name: "African Print Dress",
+    price: 89.99,
+    image: "https://images.unsplash.com/photo-1594938291221-94f18cbb5660?q=80&w=1000",
+    category: "womens",
+    color: "Blue/Orange",
+    size: "M",
     isNew: true
   },
   {
@@ -71,16 +71,33 @@ const products = [
     name: "African Print Sneakers",
     price: 89.99,
     image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=1000",
-    category: "Footwear",
+    category: "footwear",
     color: "Pattern",
     size: "42",
     isNew: false
   }
 ];
 
-const FeaturedProducts = () => {
+interface FeaturedProductsProps {
+  activeCategory?: string;
+  filteredProductIds?: number[];
+}
+
+const FeaturedProducts = ({ activeCategory = 'all', filteredProductIds }: FeaturedProductsProps) => {
   const { toast } = useToast();
   const [wishlistIds, setWishlistIds] = useState<number[]>([]);
+  const [displayedProducts, setDisplayedProducts] = useState(products);
+  
+  // Filter products based on category
+  useEffect(() => {
+    if (activeCategory === 'all' && !filteredProductIds) {
+      setDisplayedProducts(products);
+    } else if (filteredProductIds && filteredProductIds.length) {
+      setDisplayedProducts(products.filter(product => filteredProductIds.includes(product.id)));
+    } else {
+      setDisplayedProducts(products.filter(product => product.category === activeCategory));
+    }
+  }, [activeCategory, filteredProductIds]);
   
   // Subscribe to wishlist changes
   useEffect(() => {
@@ -119,6 +136,25 @@ const FeaturedProducts = () => {
     }
   };
 
+  if (displayedProducts.length === 0) {
+    return (
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Featured Products</h2>
+          </div>
+          <div className="text-center py-12">
+            <div className="bg-slate-100 rounded-full p-6 inline-block mb-4">
+              <ShoppingCart className="h-12 w-12 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-medium mb-2">No products found</h3>
+            <p className="text-slate-500 mb-4">No products match the current filter criteria.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
@@ -129,7 +165,7 @@ const FeaturedProducts = () => {
         
         <div className="hidden md:block">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
+            {displayedProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden group">
                 <div className="relative h-64 overflow-hidden">
                   <img 
@@ -172,7 +208,7 @@ const FeaturedProducts = () => {
         <div className="md:hidden">
           <Carousel className="w-full">
             <CarouselContent>
-              {products.map((product) => (
+              {displayedProducts.map((product) => (
                 <CarouselItem key={product.id} className="basis-full sm:basis-1/2">
                   <Card className="overflow-hidden group">
                     <div className="relative h-64 overflow-hidden">

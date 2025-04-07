@@ -1,11 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingBag, User, Heart, MessageSquare, Settings, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { wishlistStore } from "./WishlistDialog";
+import { addToCart } from "./ShoppingCart";
 
 // Mock user data
 const mockUserData = {
@@ -21,10 +23,27 @@ const mockUserData = {
   ]
 };
 
-const UserProfile = ({ onClose }: { onClose: () => void }) => {
+interface UserProfileProps {
+  onClose: () => void;
+}
+
+const UserProfile = ({ onClose }: UserProfileProps) => {
   const [activeTab, setActiveTab] = useState("orders");
   const [messageText, setMessageText] = useState("");
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const { toast } = useToast();
+
+  // Subscribe to wishlist changes
+  useEffect(() => {
+    const unsubscribe = wishlistStore.subscribe((items: any[]) => {
+      setWishlistItems([...items]);
+    });
+    
+    // Initial load
+    setWishlistItems([...wishlistStore.items]);
+    
+    return unsubscribe;
+  }, []);
 
   const handleSendMessage = () => {
     if (!messageText.trim()) return;
@@ -36,6 +55,23 @@ const UserProfile = ({ onClose }: { onClose: () => void }) => {
     });
     
     setMessageText("");
+  };
+  
+  const handleAddToCart = (product: any) => {
+    if (addToCart(product)) {
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      });
+    }
+  };
+  
+  const handleRemoveFromWishlist = (productId: number) => {
+    wishlistStore.removeItem(productId);
+    toast({
+      title: "Removed from wishlist",
+      description: "The item has been removed from your wishlist.",
+    });
   };
 
   return (
@@ -109,14 +145,58 @@ const UserProfile = ({ onClose }: { onClose: () => void }) => {
           
           <TabsContent value="wishlist" className="mt-0">
             <h3 className="font-medium text-lg mb-4">Wishlist</h3>
-            <div className="text-center py-8">
-              <Heart className="mx-auto h-12 w-12 text-slate-300" />
-              <h3 className="mt-4 text-lg font-medium">Your wishlist</h3>
-              <p className="text-slate-500 mt-1">
-                Items added to your wishlist will appear here. To add items, click the heart icon on a product.
-              </p>
-              <Button className="mt-4" onClick={onClose}>Browse Products</Button>
-            </div>
+            {wishlistItems.length > 0 ? (
+              <div className="space-y-4">
+                {wishlistItems.map(item => (
+                  <Card key={item.id} className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="flex gap-4">
+                        <div className="w-20 h-20 rounded-md overflow-hidden bg-slate-100 flex-shrink-0">
+                          <img 
+                            src={item.image} 
+                            alt={item.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{item.name}</h4>
+                          <p className="text-sm text-slate-500 mb-1">
+                            {item.category}, {item.color}
+                          </p>
+                          <p className="font-medium">GH₵ {item.price.toFixed(2)}</p>
+                          <div className="flex gap-2 mt-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleAddToCart(item)}
+                            >
+                              Add to Cart
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="text-red-500"
+                              onClick={() => handleRemoveFromWishlist(item.id)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Heart className="mx-auto h-12 w-12 text-slate-300" />
+                <h3 className="mt-4 text-lg font-medium">Your wishlist is empty</h3>
+                <p className="text-slate-500 mt-1">
+                  Items added to your wishlist will appear here. To add items, click the heart icon on a product.
+                </p>
+                <Button className="mt-4" onClick={onClose}>Browse Products</Button>
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="messages" className="mt-0">
