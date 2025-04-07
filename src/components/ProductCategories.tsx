@@ -6,7 +6,7 @@ const categories = [
   {
     id: "womens",
     name: "Women's Fashion",
-    image: "https://images.unsplash.com/photo-1525299374597-911581e1bdef?q=80&w=1000",
+    image: "https://images.unsplash.com/photo-1594938291221-94f18cbb5660?q=80&w=1000",
     count: 245
   },
   {
