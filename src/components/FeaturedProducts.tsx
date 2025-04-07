@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart } from "lucide-react";
@@ -12,32 +12,33 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { addToCart } from "./ShoppingCart";
+import { wishlistStore } from "./WishlistDialog";
 
-// Mock product data with improved realistic images
+// Mock product data for Ghana-specific items
 const products = [
   {
     id: 1,
-    name: "Premium Cotton T-Shirt",
-    price: 29.99,
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1000",
+    name: "Ankara Print T-Shirt",
+    price: 39.99,
+    image: "https://images.unsplash.com/photo-1563630423918-b58f07336ac5?q=80&w=1000",
     category: "Clothing",
-    color: "Black",
+    color: "Multicolor",
     size: "M",
     isNew: true
   },
   {
     id: 2,
-    name: "Slim Fit Denim Jeans",
-    price: 59.99,
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1000",
-    category: "Clothing",
-    color: "Blue",
-    size: "32",
+    name: "Kente Pocket Square",
+    price: 29.99,
+    image: "https://images.unsplash.com/photo-1596363505729-4190a9506133?q=80&w=1000",
+    category: "Accessories",
+    color: "Traditional",
+    size: "One Size",
     isNew: true
   },
   {
     id: 3,
-    name: "Leather Crossbody Bag",
+    name: "Handcrafted Leather Bag",
     price: 79.99,
     image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=1000",
     category: "Accessories",
@@ -47,81 +48,48 @@ const products = [
   },
   {
     id: 4,
-    name: "Wireless Headphones",
-    price: 129.99,
-    image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=1000",
-    category: "Electronics",
-    color: "Black",
+    name: "African Print Face Mask",
+    price: 12.99,
+    image: "https://images.unsplash.com/photo-1598887142487-3c854d2171c7?q=80&w=1000",
+    category: "Accessories",
+    color: "Mixed",
     size: "One Size",
     isNew: false
   },
   {
     id: 5,
-    name: "Minimalist Watch",
-    price: 89.99,
-    image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1000",
+    name: "Bamboo Sunglasses",
+    price: 59.99,
+    image: "https://images.unsplash.com/photo-1572635196237-14b3f281ef11?q=80&w=1000",
     category: "Accessories",
-    color: "Silver",
+    color: "Wood Brown",
     size: "One Size",
     isNew: true
   },
   {
     id: 6,
-    name: "Running Sneakers",
-    price: 119.99,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000",
+    name: "African Print Sneakers",
+    price: 89.99,
+    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=1000",
     category: "Footwear",
-    color: "White",
+    color: "Pattern",
     size: "42",
     isNew: false
   }
 ];
 
-// Create a local store for wishlist
-const wishlistStore = {
-  items: [] as number[],
-  listeners: [] as Function[],
-  
-  addItem(productId: number) {
-    if (!this.items.includes(productId)) {
-      this.items.push(productId);
-      this.notifyListeners();
-    }
-  },
-  
-  removeItem(productId: number) {
-    this.items = this.items.filter(id => id !== productId);
-    this.notifyListeners();
-  },
-  
-  isInWishlist(productId: number) {
-    return this.items.includes(productId);
-  },
-  
-  notifyListeners() {
-    this.listeners.forEach(listener => listener(this.items));
-  },
-  
-  subscribe(listener: Function) {
-    this.listeners.push(listener);
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
-    };
-  }
-};
-
 const FeaturedProducts = () => {
   const { toast } = useToast();
-  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishlistIds, setWishlistIds] = useState<number[]>([]);
   
   // Subscribe to wishlist changes
-  useState(() => {
-    const unsubscribe = wishlistStore.subscribe((items: number[]) => {
-      setWishlist([...items]);
+  useEffect(() => {
+    const unsubscribe = wishlistStore.subscribe((items: any[]) => {
+      setWishlistIds(items.map(item => item.id));
     });
     
     return unsubscribe;
-  });
+  }, []);
   
   const addProductToCart = (product: any) => {
     if (addToCart(product)) {
@@ -132,7 +100,10 @@ const FeaturedProducts = () => {
     }
   };
   
-  const toggleWishlist = (productId: number, productName: string) => {
+  const toggleWishlist = (product: any) => {
+    const productId = product.id;
+    const productName = product.name;
+    
     if (wishlistStore.isInWishlist(productId)) {
       wishlistStore.removeItem(productId);
       toast({
@@ -140,7 +111,7 @@ const FeaturedProducts = () => {
         description: `${productName} has been removed from your wishlist.`,
       });
     } else {
-      wishlistStore.addItem(productId);
+      wishlistStore.addItem(product);
       toast({
         title: "Added to wishlist",
         description: `${productName} has been added to your wishlist.`,
@@ -181,7 +152,7 @@ const FeaturedProducts = () => {
                     </Button>
                     <Button 
                       size="icon" 
-                      onClick={() => toggleWishlist(product.id, product.name)}
+                      onClick={() => toggleWishlist(product)}
                       className={`${wishlistStore.isInWishlist(product.id) ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white text-black hover:bg-white/90'}`}
                     >
                       <Heart className={`h-4 w-4 ${wishlistStore.isInWishlist(product.id) ? 'fill-current' : ''}`} />
@@ -191,7 +162,7 @@ const FeaturedProducts = () => {
                 <CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">{product.category}</div>
                   <h3 className="font-medium mt-1">{product.name}</h3>
-                  <div className="mt-2 font-semibold">${product.price.toFixed(2)}</div>
+                  <div className="mt-2 font-semibold">GH₵ {product.price.toFixed(2)}</div>
                 </CardContent>
               </Card>
             ))}
@@ -219,7 +190,7 @@ const FeaturedProducts = () => {
                     <CardContent className="p-4">
                       <div className="text-sm text-muted-foreground">{product.category}</div>
                       <h3 className="font-medium mt-1">{product.name}</h3>
-                      <div className="mt-2 font-semibold">${product.price.toFixed(2)}</div>
+                      <div className="mt-2 font-semibold">GH₵ {product.price.toFixed(2)}</div>
                       <div className="flex gap-2 mt-3">
                         <Button 
                           size="sm" 
@@ -233,7 +204,7 @@ const FeaturedProducts = () => {
                         <Button 
                           size="sm"
                           variant={wishlistStore.isInWishlist(product.id) ? "default" : "ghost"}
-                          onClick={() => toggleWishlist(product.id, product.name)}
+                          onClick={() => toggleWishlist(product)}
                           className={wishlistStore.isInWishlist(product.id) ? "bg-red-500 hover:bg-red-600" : ""}
                         >
                           <Heart className={`h-4 w-4 ${wishlistStore.isInWishlist(product.id) ? 'fill-current' : ''}`} />

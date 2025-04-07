@@ -12,23 +12,31 @@ import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { addToCart } from "./ShoppingCart";
 
-// Mock wishlist database
+// Mock wishlist database with improved imagery from Ghana-based stores
 const wishlistItems = [
   {
     id: 5,
-    name: "Minimalist Watch",
-    price: 89.99,
-    image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1000",
-    category: "Accessories",
-    color: "Silver"
+    name: "Traditional Kente Cloth",
+    price: 189.99,
+    image: "https://images.unsplash.com/photo-1596363505729-4190a9506133?q=80&w=1000",
+    category: "Traditional Wear",
+    color: "Multicolor"
   },
   {
     id: 3,
-    name: "Leather Crossbody Bag",
+    name: "Handcrafted Leather Bag",
     price: 79.99,
     image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=1000",
     category: "Accessories",
     color: "Brown"
+  },
+  {
+    id: 7,
+    name: "African Print Dress",
+    price: 119.99,
+    image: "https://images.unsplash.com/photo-1594938291221-94f18cbb5660?q=80&w=1000",
+    category: "Women's Fashion",
+    color: "Blue/Orange"
   }
 ];
 
@@ -153,7 +161,7 @@ const WishlistDialog = () => {
                     <div className="text-sm text-slate-500 mb-1">
                       {item.category}, {item.color}
                     </div>
-                    <div className="font-medium">${item.price.toFixed(2)}</div>
+                    <div className="font-medium">GH₵ {item.price.toFixed(2)}</div>
                   </div>
                   <div className="flex flex-col space-y-2">
                     <Button 

@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import ProductCategories from "@/components/ProductCategories";
@@ -9,6 +10,7 @@ import ProductDetail from "@/components/ProductDetail";
 import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
 import WishlistDialog from "@/components/WishlistDialog";
+import UserProfile from "@/components/UserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,6 +34,7 @@ const Index = () => {
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
@@ -72,6 +75,10 @@ const Index = () => {
     setShowChatbot(!showChatbot);
   };
 
+  const toggleUserProfile = () => {
+    setShowUserProfile(!showUserProfile);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header/Navigation */}
@@ -106,6 +113,13 @@ const Index = () => {
                     <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(categoriesRef)}>Collections</Button>
                     <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(aboutRef)}>About</Button>
                     <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(contactRef)}>Contact</Button>
+                    <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                      <Link to="/admin">
+                        <Button variant="ghost" className="justify-start w-full">
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -113,7 +127,11 @@ const Index = () => {
             
             <div className="flex items-center space-x-2">
               <SearchDialog />
-              <Button variant="ghost" size="icon" onClick={() => toast({ title: "User account coming soon!" })}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleUserProfile}
+              >
                 <User className="h-5 w-5" />
               </Button>
               <WishlistDialog />
@@ -126,6 +144,14 @@ const Index = () => {
               >
                 {showChatbot ? "Hide AI" : "Shop Assistant"}
               </Button>
+              
+              <div className="hidden md:block ml-2">
+                <Link to="/admin">
+                  <Button variant="ghost" size="sm">
+                    Admin
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -225,7 +251,13 @@ const Index = () => {
               <p className="text-center text-slate-600 dark:text-slate-400 mb-8">
                 Have questions or feedback? We'd love to hear from you!
               </p>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={(e) => {
+                e.preventDefault();
+                toast({
+                  title: "Message Sent",
+                  description: "Thank you for your message. We'll get back to you soon!",
+                });
+              }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium mb-2">Your Name</label>
@@ -245,7 +277,7 @@ const Index = () => {
                   <textarea rows={5} className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
                 </div>
                 <div>
-                  <Button className="w-full">Send Message</Button>
+                  <Button type="submit" className="w-full">Send Message</Button>
                 </div>
               </form>
             </div>
@@ -255,6 +287,9 @@ const Index = () => {
 
       {/* AI Chatbot Component */}
       {showChatbot && <AIAssistant onClose={toggleChatbot} />}
+      
+      {/* User Profile Dialog */}
+      {showUserProfile && <UserProfile onClose={() => setShowUserProfile(false)} />}
 
       <footer className="bg-slate-900 text-white py-10">
         <div className="container mx-auto px-4">
@@ -285,6 +320,11 @@ const Index = () => {
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Instagram</a>
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Facebook</a>
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Twitter</a>
+              </div>
+              <div className="mt-6">
+                <Link to="/admin" className="text-primary hover:text-primary/90 transition-colors">
+                  Admin Login
+                </Link>
               </div>
             </div>
           </div>
