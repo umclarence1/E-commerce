@@ -9,14 +9,14 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
-import { authStore } from "./utils/authUtils";
+import { authStore, PERMISSIONS } from "./utils/authUtils";
 
 const queryClient = new QueryClient();
 
 // Protected route component for admin routes
 const AdminRoute = ({ element }: { element: React.ReactNode }) => {
-  // Check if user is admin
-  if (authStore.isAdmin()) {
+  // Check if user is admin and has dashboard permission
+  if (authStore.isAdmin() && authStore.hasPermission(PERMISSIONS.VIEW_DASHBOARD)) {
     return <>{element}</>;
   }
   // Redirect to login if not admin

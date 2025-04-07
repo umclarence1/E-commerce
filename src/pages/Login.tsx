@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LockKeyhole, LogIn, AlertCircle } from "lucide-react";
+import { LockKeyhole, LogIn, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authStore } from "@/utils/authUtils";
 
@@ -22,7 +22,8 @@ const Login = () => {
     setLoading(true);
     setError("");
     
-    // For demo, admin credentials are admin@debutify.com with any password
+    // For demo, credentials are:
+    // owner@debutify.com (Super Admin) or admin@debutify.com (Admin) with any password
     const success = authStore.login(email, password);
     
     setTimeout(() => {
@@ -68,6 +69,17 @@ const Login = () => {
                   {error}
                 </div>
               )}
+              
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-md mb-4 flex items-start text-sm">
+                <Info className="h-4 w-4 mr-2 mt-0.5" />
+                <div>
+                  <p className="font-medium">Demo Credentials:</p>
+                  <p>Super Admin: <span className="font-mono bg-amber-100 px-1">owner@debutify.com</span></p>
+                  <p>Admin: <span className="font-mono bg-amber-100 px-1">admin@debutify.com</span></p>
+                  <p className="text-xs mt-1">Use any password for demo purposes</p>
+                </div>
+              </div>
+              
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>

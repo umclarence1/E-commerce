@@ -1,10 +1,22 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { ArrowUpRight, Users, ShoppingBag, MessageSquare, BarChart3, LogOut, Shield } from "lucide-react";
+import { 
+  ArrowUpRight, 
+  Users, 
+  ShoppingBag, 
+  MessageSquare, 
+  BarChart3, 
+  LogOut, 
+  Shield, 
+  Settings,
+  Bell,
+  AlertTriangle
+} from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   DropdownMenu,
@@ -14,8 +26,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { authStore } from "@/utils/authUtils";
+import { authStore, PERMISSIONS } from "@/utils/authUtils";
+import AdminAnalytics from "@/components/AdminAnalytics";
+import AdminUserManagement from "@/components/AdminUserManagement";
 
 const mockDatabase = {
   users: [
@@ -38,7 +58,13 @@ const mockDatabase = {
     totalUsers: 583,
     totalProducts: 124,
     totalOrders: 298,
-  }
+  },
+  notifications: [
+    { id: 1, title: "New Order", message: "Order #ORD-1237 has been placed", time: "10 minutes ago", read: false, type: "order" },
+    { id: 2, title: "Low Stock Alert", message: "Kente Cloth Handmade is running low on stock", time: "1 hour ago", read: false, type: "inventory" },
+    { id: 3, title: "New Message", message: "Kofi Mensah has sent you a message", time: "3 hours ago", read: true, type: "message" },
+    { id: 4, title: "Payment Failed", message: "Payment for order #ORD-1235 has failed", time: "5 hours ago", read: true, type: "payment" },
+  ]
 };
 
 const AdminDashboard = () => {
@@ -46,6 +72,7 @@ const AdminDashboard = () => {
   const [messages, setMessages] = useState(mockDatabase.messages);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
+  const [notifications, setNotifications] = useState(mockDatabase.notifications);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -96,6 +123,49 @@ const AdminDashboard = () => {
     setReplyTo(null);
     setReplyMessage("");
   };
+  
+  const markAllNotificationsAsRead = () => {
+    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
+    toast({
+      title: "Notifications cleared",
+      description: "All notifications have been marked as read.",
+    });
+  };
+  
+  const handleMarkNotificationAsRead = (id: number) => {
+    setNotifications(notifications.map(notification => 
+      notification.id === id ? { ...notification, read: true } : notification
+    ));
+  };
+  
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+
+  // Check permissions
+  const canViewDashboard = authStore.hasPermission(PERMISSIONS.VIEW_DASHBOARD);
+  const canManageProducts = authStore.hasPermission(PERMISSIONS.MANAGE_PRODUCTS);
+  const canManageOrders = authStore.hasPermission(PERMISSIONS.MANAGE_ORDERS);
+  const canManageUsers = authStore.hasPermission(PERMISSIONS.MANAGE_USERS);
+  const canManageMessages = authStore.hasPermission(PERMISSIONS.MANAGE_MESSAGES);
+  const canManageSettings = authStore.hasPermission(PERMISSIONS.MANAGE_SETTINGS);
+
+  if (!canViewDashboard) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <Card className="w-[420px]">
+          <CardHeader>
+            <CardTitle className="flex items-center text-amber-600">
+              <AlertTriangle className="mr-2 h-5 w-5" />
+              Access Restricted
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">You don't have permission to access the admin dashboard.</p>
+            <Button onClick={handleLogout} className="w-full">Return to Login</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-12">
@@ -105,14 +175,94 @@ const AdminDashboard = () => {
             <h1 className="text-2xl font-bold text-primary">DeButify Admin</h1>
             <div className="flex items-center gap-2">
               <DropdownMenu>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="relative">
+                          <Bell className="h-4 w-4" />
+                          {unreadNotificationsCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                              {unreadNotificationsCount}
+                            </span>
+                          )}
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Notifications
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <DropdownMenuContent align="end" className="w-80">
+                  <div className="flex items-center justify-between px-4 py-2 border-b">
+                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 text-xs" 
+                      onClick={markAllNotificationsAsRead}
+                      disabled={unreadNotificationsCount === 0}
+                    >
+                      Mark all as read
+                    </Button>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto py-1">
+                    {notifications.length > 0 ? (
+                      notifications.map(notification => (
+                        <DropdownMenuItem 
+                          key={notification.id} 
+                          className={`py-3 px-4 cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                          onClick={() => handleMarkNotificationAsRead(notification.id)}
+                        >
+                          <div className="flex gap-3 items-start w-full">
+                            <div className={`rounded-full p-2 ${
+                              notification.type === 'order' ? 'bg-green-100 text-green-600' :
+                              notification.type === 'inventory' ? 'bg-amber-100 text-amber-600' :
+                              notification.type === 'message' ? 'bg-blue-100 text-blue-600' :
+                              'bg-red-100 text-red-600'
+                            }`}>
+                              {notification.type === 'order' && <ShoppingBag className="h-4 w-4" />}
+                              {notification.type === 'inventory' && <AlertTriangle className="h-4 w-4" />}
+                              {notification.type === 'message' && <MessageSquare className="h-4 w-4" />}
+                              {notification.type === 'payment' && <ArrowUpRight className="h-4 w-4" />}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">{notification.title}</div>
+                              <div className="text-sm text-muted-foreground">{notification.message}</div>
+                              <div className="text-xs text-muted-foreground mt-1">{notification.time}</div>
+                            </div>
+                          </div>
+                        </DropdownMenuItem>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-center text-muted-foreground">
+                        No notifications
+                      </div>
+                    )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    Admin
+                    {authStore.currentUser?.role.charAt(0).toUpperCase() + authStore.currentUser?.role.slice(1).replace('_', ' ')}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
+                  <DropdownMenuItem className="flex items-center gap-2">
+                    <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
+                      {authStore.currentUser?.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">{authStore.currentUser?.name}</div>
+                      <div className="text-xs text-muted-foreground">{authStore.currentUser?.email}</div>
+                    </div>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setActiveTab("settings")}>
                     Settings
@@ -141,43 +291,61 @@ const AdminDashboard = () => {
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Overview
               </Button>
-              <Button 
-                variant={activeTab === "products" ? "default" : "ghost"} 
-                className="w-full justify-start" 
-                onClick={() => setActiveTab("products")}
-              >
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                Products
-              </Button>
-              <Button 
-                variant={activeTab === "orders" ? "default" : "ghost"} 
-                className="w-full justify-start" 
-                onClick={() => setActiveTab("orders")}
-              >
-                <ArrowUpRight className="mr-2 h-4 w-4" />
-                Orders
-              </Button>
-              <Button 
-                variant={activeTab === "customers" ? "default" : "ghost"} 
-                className="w-full justify-start" 
-                onClick={() => setActiveTab("customers")}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Customers
-              </Button>
-              <Button 
-                variant={activeTab === "messages" ? "default" : "ghost"} 
-                className="w-full justify-start" 
-                onClick={() => setActiveTab("messages")}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Messages
-                {messages.filter(m => !m.read).length > 0 && (
-                  <span className="ml-auto bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                    {messages.filter(m => !m.read).length}
-                  </span>
-                )}
-              </Button>
+              {canManageProducts && (
+                <Button 
+                  variant={activeTab === "products" ? "default" : "ghost"} 
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("products")}
+                >
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Products
+                </Button>
+              )}
+              {canManageOrders && (
+                <Button 
+                  variant={activeTab === "orders" ? "default" : "ghost"} 
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("orders")}
+                >
+                  <ArrowUpRight className="mr-2 h-4 w-4" />
+                  Orders
+                </Button>
+              )}
+              {canManageUsers && (
+                <Button 
+                  variant={activeTab === "customers" ? "default" : "ghost"} 
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("customers")}
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  Customers
+                </Button>
+              )}
+              {canManageMessages && (
+                <Button 
+                  variant={activeTab === "messages" ? "default" : "ghost"} 
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("messages")}
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Messages
+                  {messages.filter(m => !m.read).length > 0 && (
+                    <span className="ml-auto bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                      {messages.filter(m => !m.read).length}
+                    </span>
+                  )}
+                </Button>
+              )}
+              {canManageSettings && (
+                <Button 
+                  variant={activeTab === "settings" ? "default" : "ghost"} 
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("settings")}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Button>
+              )}
               <Button 
                 variant="ghost" 
                 className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 mt-8" 
@@ -191,83 +359,7 @@ const AdminDashboard = () => {
           
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6">
             {activeTab === "overview" && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Dashboard Overview</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Total Sales
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">GH₵ {mockDatabase.metrics.totalSales.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">+12% from last month</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Users
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{mockDatabase.metrics.totalUsers}</div>
-                      <p className="text-xs text-muted-foreground mt-1">+8% from last month</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Products
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{mockDatabase.metrics.totalProducts}</div>
-                      <p className="text-xs text-muted-foreground mt-1">+5 new this month</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Orders
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{mockDatabase.metrics.totalOrders}</div>
-                      <p className="text-xs text-muted-foreground mt-1">+18% from last month</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <h3 className="font-semibold text-lg mb-4">Recent Orders</h3>
-                <div className="rounded-md border">
-                  <div className="grid grid-cols-4 font-medium text-sm p-4 bg-slate-50 dark:bg-slate-800 border-b">
-                    <div>Order ID</div>
-                    <div>Customer</div>
-                    <div>Amount</div>
-                    <div>Status</div>
-                  </div>
-                  {mockDatabase.orders.map(order => (
-                    <div key={order.id} className="grid grid-cols-4 text-sm p-4 border-b last:border-0">
-                      <div>{order.id}</div>
-                      <div>{order.customer}</div>
-                      <div>GH₵ {order.amount.toFixed(2)}</div>
-                      <div>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          order.status === "Delivered" 
-                            ? "bg-green-100 text-green-800" 
-                            : order.status === "Shipped" 
-                            ? "bg-blue-100 text-blue-800" 
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <AdminAnalytics />
             )}
             
             {activeTab === "messages" && (
@@ -324,23 +416,7 @@ const AdminDashboard = () => {
             )}
             
             {activeTab === "customers" && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Customers</h2>
-                <div className="rounded-md border">
-                  <div className="grid grid-cols-3 font-medium text-sm p-4 bg-slate-50 dark:bg-slate-800 border-b">
-                    <div>Name</div>
-                    <div>Email</div>
-                    <div>Date Joined</div>
-                  </div>
-                  {mockDatabase.users.map(user => (
-                    <div key={user.id} className="grid grid-cols-3 text-sm p-4 border-b last:border-0">
-                      <div>{user.name}</div>
-                      <div>{user.email}</div>
-                      <div>{user.dateJoined}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <AdminUserManagement />
             )}
             
             {activeTab === "products" && (
@@ -381,6 +457,69 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+            
+            {activeTab === "settings" && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6">Settings</h2>
+                
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>API Integration</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Connect your store to external e-commerce platforms for product synchronization.
+                      </p>
+                      <div className="grid gap-4">
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                              <img src="https://jumia.com.gh/assets/favicons/favicon-192.png" alt="Jumia" className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium">Jumia Ghana</h3>
+                              <p className="text-xs text-muted-foreground">Connected on April 1, 2023</p>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm">Disconnect</Button>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                              <ShoppingBag className="w-5 h-5 text-slate-600" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium">Connect New Platform</h3>
+                              <p className="text-xs text-muted-foreground">Sync with another e-commerce platform</p>
+                            </div>
+                          </div>
+                          <Button size="sm">Connect</Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Export Data</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Export your store data for backup or analysis.
+                      </p>
+                      <div className="flex flex-wrap gap-4">
+                        <Button variant="outline" size="sm">Export Products</Button>
+                        <Button variant="outline" size="sm">Export Orders</Button>
+                        <Button variant="outline" size="sm">Export Customers</Button>
+                        <Button variant="outline" size="sm">Full Backup</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             )}

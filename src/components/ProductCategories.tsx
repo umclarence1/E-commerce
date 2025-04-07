@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   {
@@ -22,7 +23,7 @@ const categories = [
     count: 78
   },
   {
-    id: "footwear",
+    id: "electronics",
     name: "Electronics",
     image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000",
     count: 92
@@ -34,6 +35,17 @@ interface ProductCategoriesProps {
 }
 
 const ProductCategories = ({ onCategoryClick }: ProductCategoriesProps) => {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (categoryId: string) => {
+    if (onCategoryClick) {
+      onCategoryClick(categoryId);
+    } else {
+      // If no callback provided, navigate to a category page
+      navigate(`/category/${categoryId}`);
+    }
+  };
+
   return (
     <section className="py-8 md:py-12 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -59,7 +71,7 @@ const ProductCategories = ({ onCategoryClick }: ProductCategoriesProps) => {
                   <Button 
                     variant="outline" 
                     className="mt-2 md:mt-3 bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors text-xs md:text-sm py-1 md:py-2"
-                    onClick={() => onCategoryClick && onCategoryClick(category.id)}
+                    onClick={() => handleCategoryClick(category.id)}
                   >
                     Shop Now
                   </Button>
