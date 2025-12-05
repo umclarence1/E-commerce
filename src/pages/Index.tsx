@@ -10,27 +10,30 @@ import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
 import WishlistDialog from "@/components/WishlistDialog";
 import UserProfile from "@/components/UserProfile";
+import Testimonials from "@/components/Testimonials";
+import PromoBanner from "@/components/PromoBanner";
+import SizeGuide from "@/components/SizeGuide";
+import RecentlyViewed from "@/components/RecentlyViewed";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Search, User, Heart, Menu, X } from "lucide-react";
+import { User, Menu, MapPin, Phone, Mail, ArrowUpRight, Sparkles, Instagram, Facebook, Twitter } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AIAssistant from "@/components/AIAssistant";
 import { authStore } from "@/utils/authUtils";
 
 const categories = [
-  { id: "all", name: "All Products" },
-  { id: "womens", name: "Women's Fashion" },
-  { id: "mens", name: "Men's Fashion" },
+  { id: "all", name: "All" },
+  { id: "womens", name: "Women" },
+  { id: "mens", name: "Men" },
   { id: "accessories", name: "Accessories" },
   { id: "footwear", name: "Footwear" }
 ];
 
 const productsByCategory = {
   all: [1, 2, 3, 4, 5, 6],
-  womens: [1, 5],
-  mens: [2, 6],
-  accessories: [3, 4],
+  womens: [1, 4],
+  mens: [2],
+  accessories: [3, 5],
   footwear: [6]
 };
 
@@ -40,31 +43,39 @@ const Index = () => {
   const [filteredProducts, setFilteredProducts] = useState(productsByCategory.all);
   const [showChatbot, setShowChatbot] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
-  
+
   const featuredRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
-  
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     setFilteredProducts(productsByCategory[activeCategory as keyof typeof productsByCategory] || []);
   }, [activeCategory]);
-  
+
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
     if (ref && ref.current) {
       ref.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
-  
+
   const toggleProductDetail = () => {
     setShowProductDetail(!showProductDetail);
-    
+
     if (!showProductDetail) {
       setTimeout(() => {
-        document.getElementById('product-detail')?.scrollIntoView({ 
+        document.getElementById('product-detail')?.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
         });
@@ -75,15 +86,15 @@ const Index = () => {
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
     toast({
-      title: `Category Changed`,
-      description: `Now showing ${category === "all" ? "all products" : categories.find(c => c.id === category)?.name}`,
+      title: `Collection Updated`,
+      description: `Viewing ${category === "all" ? "all collections" : categories.find(c => c.id === category)?.name}`,
     });
   };
-  
+
   const navigateToCategory = (categoryId: string) => {
     setActiveCategory(categoryId);
     scrollToSection(featuredRef);
-    
+
     toast({
       title: "Category Selected",
       description: `Browsing ${categories.find(c => c.id === categoryId)?.name || 'All Products'}`,
@@ -106,76 +117,131 @@ const Index = () => {
     }
   };
 
+  const navLinks = [
+    { label: "Home", action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+    { label: "Shop", action: () => scrollToSection(featuredRef) },
+    { label: "Collections", action: () => scrollToSection(categoriesRef) },
+    { label: "About", action: () => scrollToSection(aboutRef) },
+    { label: "Contact", action: () => scrollToSection(contactRef) },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Promotional Banner */}
+      <PromoBanner />
+
+      {/* Premium Header */}
+      <header className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled
+          ? 'top-0 bg-background/80 backdrop-blur-xl border-b border-border shadow-lg'
+          : 'top-[44px] bg-transparent'
+      }`}>
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">DeButify</h1>
+              <Link to="/" className="group">
+                <h1 className="text-2xl font-serif font-semibold tracking-tight">
+                  <span className={`transition-colors duration-300 ${isScrolled ? 'text-foreground' : 'text-white'}`}>
+                    DEBU
+                  </span>
+                  <span className="text-gradient-gold">TIFY</span>
+                </h1>
+              </Link>
             </div>
-            
-            <div className="hidden md:flex items-center space-x-6">
-              <Button variant="link" className="text-foreground" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Button>
-              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(featuredRef)}>Shop</Button>
-              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(categoriesRef)}>Collections</Button>
-              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(aboutRef)}>About</Button>
-              <Button variant="link" className="text-foreground" onClick={() => scrollToSection(contactRef)}>Contact</Button>
-            </div>
-            
-            <div className="md:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left">
-                  <div className="flex flex-col space-y-4 mt-8">
-                    <Button variant="ghost" className="justify-start" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(featuredRef)}>Shop</Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(categoriesRef)}>Collections</Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(aboutRef)}>About</Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => scrollToSection(contactRef)}>Contact</Button>
-                    {authStore.isAdmin() && (
-                      <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
-                        <Button variant="ghost" className="justify-start w-full" onClick={handleAdminNavigation}>
-                          Admin Dashboard
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-            
-            <div className="flex items-center space-x-2">
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-8">
+              {navLinks.map((link, index) => (
+                <button
+                  key={index}
+                  onClick={link.action}
+                  className={`text-sm font-medium tracking-wide luxury-underline transition-colors ${
+                    isScrolled ? 'text-foreground/70 hover:text-foreground' : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              ))}
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
               <SearchDialog />
-              <Button 
-                variant="ghost" 
-                size="icon" 
+
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={toggleUserProfile}
+                className={`rounded-full transition-colors ${
+                  isScrolled ? 'hover:bg-secondary' : 'hover:bg-white/10'
+                }`}
               >
-                <User className="h-5 w-5" />
+                <User className={`h-5 w-5 ${isScrolled ? 'text-foreground' : 'text-white'}`} />
               </Button>
+
               <WishlistDialog />
               <ShoppingCart />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="ml-2 hidden md:flex"
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`hidden md:flex items-center gap-2 rounded-full px-4 transition-colors ${
+                  isScrolled
+                    ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
+                    : 'glass text-white hover:bg-white/20'
+                }`}
                 onClick={toggleChatbot}
               >
-                {showChatbot ? "Hide AI" : "Shop Assistant"}
+                <Sparkles className="h-4 w-4" />
+                <span className="text-sm">AI Stylist</span>
               </Button>
-              
-              {authStore.isAdmin() && (
-                <div className="hidden md:block ml-2">
-                  <Button variant="ghost" size="sm" onClick={handleAdminNavigation}>
-                    Admin
-                  </Button>
-                </div>
-              )}
+
+              {/* Mobile Menu */}
+              <div className="lg:hidden">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <Menu className={`h-5 w-5 ${isScrolled ? 'text-foreground' : 'text-white'}`} />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-80 bg-background border-border">
+                    <div className="flex flex-col h-full pt-8">
+                      <div className="space-y-1">
+                        {navLinks.map((link, index) => (
+                          <button
+                            key={index}
+                            onClick={link.action}
+                            className="w-full text-left py-3 px-4 text-lg font-medium text-foreground hover:text-amber-500 hover:bg-secondary/50 rounded-lg transition-colors"
+                          >
+                            {link.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="mt-auto pb-8 space-y-4">
+                        <Button
+                          className="w-full btn-luxury rounded-full py-6"
+                          onClick={toggleChatbot}
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          <span className="relative z-10">AI Style Assistant</span>
+                        </Button>
+
+                        {authStore.isAdmin() && (
+                          <Button
+                            variant="outline"
+                            className="w-full rounded-full border-border"
+                            onClick={handleAdminNavigation}
+                          >
+                            Admin Dashboard
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </div>
         </div>
@@ -183,170 +249,372 @@ const Index = () => {
 
       <main className="flex-grow">
         <HeroSection />
-        
-        <section className="py-8 container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold mb-4 md:mb-0">Browse Our Collection</h2>
-            <Button onClick={toggleProductDetail} className="w-full md:w-auto">
-              {showProductDetail ? "Hide Details" : "View Product Details"}
-            </Button>
-          </div>
-          
-          <Tabs 
-            defaultValue="all" 
-            value={activeCategory} 
-            onValueChange={handleCategoryChange}
-            className="w-full mb-8"
-          >
-            <TabsList className={`w-full ${isMobile ? 'grid grid-cols-2 gap-1' : 'flex'} mb-6 overflow-x-auto`}>
+
+        {/* Browse Collection Section */}
+        <section className="py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-12">
+              <div>
+                <p className="text-amber-500 text-sm font-medium tracking-widest uppercase mb-3">
+                  Discover
+                </p>
+                <h2 className="section-title">
+                  Browse <span className="text-gradient-gold">Collection</span>
+                </h2>
+              </div>
+
+              <Button
+                onClick={toggleProductDetail}
+                variant="outline"
+                className="btn-outline-luxury rounded-full px-6 py-5"
+              >
+                {showProductDetail ? "Hide Details" : "View Product Details"}
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Category Tabs */}
+            <Tabs
+              defaultValue="all"
+              value={activeCategory}
+              onValueChange={handleCategoryChange}
+              className="w-full"
+            >
+              <TabsList className="w-full max-w-2xl mx-auto flex justify-center gap-2 bg-transparent h-auto p-0 mb-8">
+                {categories.map(category => (
+                  <TabsTrigger
+                    key={category.id}
+                    value={category.id}
+                    className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=inactive]:bg-secondary/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-secondary"
+                  >
+                    {category.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
               {categories.map(category => (
-                <TabsTrigger 
-                  key={category.id} 
-                  value={category.id}
-                  className={`${isMobile ? 'py-2 px-1 text-sm mb-1' : ''}`}
-                >
-                  {category.name}
-                </TabsTrigger>
+                <TabsContent key={category.id} value={category.id} className="mt-0">
+                  <p className="text-center text-muted-foreground mb-8">
+                    {category.id === "all"
+                      ? "Explore our complete collection of premium pieces"
+                      : `Discover our ${category.name} collection`}
+                  </p>
+                </TabsContent>
               ))}
-            </TabsList>
-            
-            {categories.map(category => (
-              <TabsContent key={category.id} value={category.id} className="mt-0">
-                <div className="text-center text-slate-600 dark:text-slate-400 mb-4">
-                  {category.id === "all" 
-                    ? "Showing all products across categories" 
-                    : `Showing ${category.name} collection - ${productsByCategory[category.id as keyof typeof productsByCategory]?.length || 0} products`}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
+            </Tabs>
+          </div>
         </section>
-        
+
         {showProductDetail && (
           <div id="product-detail">
             <ProductDetail />
           </div>
         )}
-        
+
         <div ref={featuredRef}>
           <FeaturedProducts activeCategory={activeCategory} filteredProductIds={filteredProducts} />
         </div>
-        
+
+        {/* Recently Viewed Section */}
+        <RecentlyViewed />
+
         <div ref={categoriesRef}>
           <ProductCategories onCategoryClick={navigateToCategory} />
         </div>
-        
-        <div ref={aboutRef} className="py-16 bg-slate-50 dark:bg-slate-800/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold mb-6">About DeButify</h2>
-              <p className="text-lg text-slate-700 dark:text-slate-300 mb-8">
-                DeButify is a premium fashion destination offering curated collections of high-quality, sustainable clothing and accessories. We believe in timeless style, ethical production, and making fashion accessible to everyone.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
-                  <h3 className="font-semibold text-xl mb-3">Our Mission</h3>
-                  <p className="text-slate-600 dark:text-slate-400">To provide exceptional quality fashion that empowers individuals to express their unique style while promoting sustainability.</p>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
-                  <h3 className="font-semibold text-xl mb-3">Our Values</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Quality, sustainability, ethical production, and customer satisfaction are at the core of everything we do.</p>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm">
-                  <h3 className="font-semibold text-xl mb-3">Our Promise</h3>
-                  <p className="text-slate-600 dark:text-slate-400">We're committed to offering premium products, exceptional service, and a seamless shopping experience.</p>
-                </div>
+
+        {/* About Section */}
+        <div ref={aboutRef} className="py-24 bg-background relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-16">
+                <p className="text-amber-500 text-sm font-medium tracking-widest uppercase mb-3">
+                  Our Story
+                </p>
+                <h2 className="section-title mb-6">
+                  About <span className="text-gradient-gold">Debutify</span>
+                </h2>
+                <div className="divider-gold mb-8" />
+                <p className="section-subtitle max-w-2xl mx-auto">
+                  We are a premium fashion destination committed to bringing you curated collections of exceptional quality.
+                  Our philosophy centers on timeless elegance, sustainable practices, and making luxury accessible.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                {[
+                  {
+                    title: "Our Mission",
+                    description: "To provide exceptional quality fashion that empowers individuals to express their unique style while promoting sustainability.",
+                    number: "01"
+                  },
+                  {
+                    title: "Our Values",
+                    description: "Quality craftsmanship, ethical production, and unwavering commitment to customer satisfaction guide everything we do.",
+                    number: "02"
+                  },
+                  {
+                    title: "Our Promise",
+                    description: "Premium products, exceptional service, and a seamless shopping experience that exceeds your expectations.",
+                    number: "03"
+                  }
+                ].map((item, index) => (
+                  <div key={index} className="group">
+                    <div className="glass rounded-2xl p-8 h-full hover:bg-amber-500/5 transition-colors duration-500">
+                      <span className="text-5xl font-serif text-gradient-gold opacity-30 group-hover:opacity-60 transition-opacity">
+                        {item.number}
+                      </span>
+                      <h3 className="font-serif text-xl font-medium mt-4 mb-3">{item.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-        
+
         <Newsletter />
-        
-        <div ref={contactRef} className="py-16 bg-white dark:bg-slate-900">
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* Contact Section */}
+        <div ref={contactRef} className="py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="text-3xl font-bold mb-6 text-center">Contact Us</h2>
-              <p className="text-center text-slate-600 dark:text-slate-400 mb-8">
-                Have questions or feedback? We'd love to hear from you!
-              </p>
-              <form className="space-y-6" onSubmit={(e) => {
-                e.preventDefault();
-                toast({
-                  title: "Message Sent",
-                  description: "Thank you for your message. We'll get back to you soon!",
-                });
-              }}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="max-w-5xl mx-auto">
+              <div className="grid lg:grid-cols-2 gap-16">
+                {/* Contact Info */}
+                <div className="space-y-8">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Your Name</label>
-                    <input type="text" className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <p className="text-amber-500 text-sm font-medium tracking-widest uppercase mb-3">
+                      Get in Touch
+                    </p>
+                    <h2 className="section-title mb-4">
+                      Contact <span className="text-gradient-gold">Us</span>
+                    </h2>
+                    <p className="section-subtitle">
+                      Have questions or feedback? We'd love to hear from you. Our team is here to help.
+                    </p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email Address</label>
-                    <input type="email" className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none" />
+
+                  <div className="space-y-6">
+                    {[
+                      { icon: MapPin, label: "Visit Us", value: "123 Fashion Avenue, Style District" },
+                      { icon: Phone, label: "Call Us", value: "+1 (555) 123-4567" },
+                      { icon: Mail, label: "Email Us", value: "hello@debutify.com" }
+                    ].map((item, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full glass flex items-center justify-center">
+                          <item.icon className="w-5 h-5 text-amber-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">{item.label}</p>
+                          <p className="font-medium">{item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="pt-6 border-t border-border">
+                    <p className="text-sm text-muted-foreground mb-4">Follow Us</p>
+                    <div className="flex gap-3">
+                      {[Instagram, Facebook, Twitter].map((Icon, index) => (
+                        <a
+                          key={index}
+                          href="#"
+                          className="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                        >
+                          <Icon className="w-5 h-5 text-amber-500" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Subject</label>
-                  <input type="text" className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none" />
+
+                {/* Contact Form */}
+                <div className="glass rounded-3xl p-8 md:p-10">
+                  <form className="space-y-6" onSubmit={(e) => {
+                    e.preventDefault();
+                    toast({
+                      title: "Message Sent",
+                      description: "Thank you for reaching out. We'll get back to you within 24 hours.",
+                    });
+                  }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Your Name</label>
+                        <input
+                          type="text"
+                          className="input-luxury w-full"
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Email Address</label>
+                        <input
+                          type="email"
+                          className="input-luxury w-full"
+                          placeholder="john@example.com"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Subject</label>
+                      <input
+                        type="text"
+                        className="input-luxury w-full"
+                        placeholder="How can we help?"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Message</label>
+                      <textarea
+                        rows={5}
+                        className="input-luxury w-full resize-none"
+                        placeholder="Tell us more..."
+                      />
+                    </div>
+                    <Button type="submit" className="w-full btn-luxury rounded-full py-6 text-base font-medium">
+                      <span className="relative z-10">Send Message</span>
+                    </Button>
+                  </form>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
-                  <textarea rows={5} className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
-                </div>
-                <div>
-                  <Button type="submit" className="w-full">Send Message</Button>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>
       </main>
 
       {showChatbot && <AIAssistant onClose={toggleChatbot} />}
-      
+
       {showUserProfile && <UserProfile onClose={() => setShowUserProfile(false)} />}
 
-      <footer className="bg-slate-900 text-white py-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h2 className="text-xl font-bold mb-4">DeButify</h2>
-              <p className="text-slate-300">Your premium shopping destination for stylish and affordable products.</p>
+      {/* Premium Footer */}
+      <footer className="bg-card border-t border-border">
+        {/* Main Footer */}
+        <div className="container mx-auto px-4 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            {/* Brand */}
+            <div className="lg:col-span-1">
+              <h2 className="text-2xl font-serif font-semibold tracking-tight mb-4">
+                <span className="text-foreground">DEBU</span>
+                <span className="text-gradient-gold">TIFY</span>
+              </h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Your premium destination for curated fashion and lifestyle. Discover timeless pieces that define modern elegance.
+              </p>
+              <div className="flex gap-3">
+                {[Instagram, Facebook, Twitter].map((Icon, index) => (
+                  <a
+                    key={index}
+                    href="#"
+                    className="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-amber-500" />
+                  </a>
+                ))}
+              </div>
             </div>
+
+            {/* Shop Links */}
             <div>
-              <h3 className="font-semibold mb-4">Shop</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">New Arrivals</a></li>
-                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">Best Sellers</a></li>
-                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">Sale</a></li>
+              <h3 className="font-serif text-lg font-medium mb-6">Shop</h3>
+              <ul className="space-y-3">
+                {['New Arrivals', 'Best Sellers', 'Sale', 'Gift Cards', 'Lookbook'].map((item, index) => (
+                  <li key={index}>
+                    <a href="#" className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                      {item}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
+
+            {/* Help Links */}
             <div>
-              <h3 className="font-semibold mb-4">Help</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">FAQ</a></li>
-                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">Shipping & Returns</a></li>
-                <li><a href="#" className="text-slate-300 hover:text-white transition-colors">Contact Us</a></li>
+              <h3 className="font-serif text-lg font-medium mb-6">Help</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#" className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                    FAQ
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                    Shipping & Returns
+                  </a>
+                </li>
+                <li>
+                  <SizeGuide trigger={
+                    <button className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                      Size Guide
+                    </button>
+                  } />
+                </li>
+                <li>
+                  <a href="#" className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                    Track Order
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                    Contact Us
+                  </a>
+                </li>
               </ul>
             </div>
+
+            {/* Company Links */}
             <div>
-              <h3 className="font-semibold mb-4">Connect</h3>
-              <div className="flex flex-wrap gap-4">
-                <a href="#" className="text-slate-300 hover:text-white transition-colors">Instagram</a>
-                <a href="#" className="text-slate-300 hover:text-white transition-colors">Facebook</a>
-                <a href="#" className="text-slate-300 hover:text-white transition-colors">Twitter</a>
-              </div>
-              <div className="mt-6">
-                <Link to="/admin" className="text-primary hover:text-primary/90 transition-colors">
-                  Admin Login
-                </Link>
-              </div>
+              <h3 className="font-serif text-lg font-medium mb-6">Company</h3>
+              <ul className="space-y-3">
+                {['About Us', 'Careers', 'Sustainability', 'Press', 'Terms & Privacy'].map((item, index) => (
+                  <li key={index}>
+                    <a href="#" className="text-muted-foreground hover:text-amber-500 transition-colors luxury-underline">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {authStore.isAdmin() && (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <Link
+                    to="/login"
+                    className="text-amber-500 hover:text-amber-400 transition-colors text-sm font-medium"
+                  >
+                    Admin Access
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-slate-800 text-center text-slate-400">
-            <p>&copy; {new Date().getFullYear()} DeButify. All rights reserved.</p>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-border">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                &copy; {new Date().getFullYear()} Debutify. All rights reserved.
+              </p>
+              <div className="flex items-center gap-6">
+                <a href="#" className="text-sm text-muted-foreground hover:text-amber-500 transition-colors">
+                  Privacy Policy
+                </a>
+                <a href="#" className="text-sm text-muted-foreground hover:text-amber-500 transition-colors">
+                  Terms of Service
+                </a>
+                <a href="#" className="text-sm text-muted-foreground hover:text-amber-500 transition-colors">
+                  Cookies
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

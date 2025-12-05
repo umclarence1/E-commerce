@@ -1,131 +1,233 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, RotateCw, ShoppingBag } from "lucide-react";
+import { ArrowRight, Play, Sparkles } from "lucide-react";
 
 const HeroSection = () => {
-  const [rotation, setRotation] = useState(0);
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const features = [
-    { text: "Exclusive Collections", position: 0 },
-    { text: "Premium Quality", position: 72 },
-    { text: "Global Shipping", position: 144 },
-    { text: "Easy Returns", position: 216 },
-    { text: "24/7 Support", position: 288 },
+  const slides = [
+    {
+      title: "Timeless",
+      subtitle: "Elegance",
+      description: "Discover curated collections that transcend seasons",
+      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=2000",
+      accent: "New Season 2025"
+    },
+    {
+      title: "Refined",
+      subtitle: "Luxury",
+      description: "Where craftsmanship meets contemporary design",
+      image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000",
+      accent: "Exclusive Collection"
+    },
+    {
+      title: "Modern",
+      subtitle: "Heritage",
+      description: "Tradition reimagined for the discerning individual",
+      image: "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=2000",
+      accent: "Limited Edition"
+    }
   ];
 
   useEffect(() => {
+    setIsLoaded(true);
     const interval = setInterval(() => {
-      setRotation((prev) => (prev + 0.2) % 360);
-    }, 50);
-
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
+  const stats = [
+    { value: "50K+", label: "Happy Clients" },
+    { value: "200+", label: "Premium Brands" },
+    { value: "15+", label: "Years of Excellence" },
+  ];
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-indigo-800 via-purple-700 to-pink-700 text-white py-24">
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row items-center gap-12">
-          {/* Left Side Text */}
-          <div className="md:w-1/2 text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              Redefining <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-yellow-200 to-pink-300">
-                Modern Shopping
+    <section className="relative min-h-screen overflow-hidden bg-background">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-luxury ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+          </div>
+        ))}
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute top-20 right-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse-glow" />
+      <div className="absolute bottom-20 left-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl" />
+
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+        backgroundSize: '100px 100px'
+      }} />
+
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-4 min-h-screen flex items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center w-full py-20">
+          {/* Left Content */}
+          <div className={`space-y-8 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            {/* Accent Badge */}
+            <div
+              className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full"
+              style={{ animationDelay: '0.2s' }}
+            >
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-medium text-amber-500 tracking-wider uppercase">
+                {slides[currentSlide].accent}
               </span>
-            </h1>
-            <p className="text-lg md:text-xl text-white/80 mb-8">
-              Discover premium products, exclusive deals, and an experience tailored just for you.
+            </div>
+
+            {/* Main Title */}
+            <div className="space-y-2">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif font-medium text-white leading-none">
+                {slides[currentSlide].title}
+              </h1>
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif font-medium leading-none">
+                <span className="text-gradient-gold">{slides[currentSlide].subtitle}</span>
+              </h1>
+            </div>
+
+            {/* Description */}
+            <p className="text-lg md:text-xl text-white/60 max-w-md font-light leading-relaxed">
+              {slides[currentSlide].description}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <Button size="lg" className="bg-white text-black hover:bg-gray-200">
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                Browse Products
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button
+                size="lg"
+                className="btn-luxury group px-8 py-6 text-base font-medium rounded-full"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Explore Collection
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </span>
               </Button>
-              <Button size="lg" variant="outline" className="border-black text-black hover:bg-white/10">
-                Watch Demo
+              <Button
+                size="lg"
+                variant="ghost"
+                className="px-8 py-6 text-base font-medium text-white border border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-300"
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Watch Story
               </Button>
             </div>
-          </div>
 
-          {/* Right Side Orbit Animation */}
-          <div className="md:w-1/2 relative">
-            <div className="aspect-square w-full max-w-md mx-auto relative">
-              {/* Rotating ring */}
-              <div
-                className="absolute inset-0 border-4 border-dashed border-white/30 rounded-full"
-                style={{ transform: `rotate(${rotation}deg)` }}
-              />
-
-              {/* Center Image */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-40 h-40 rounded-full bg-white/20 backdrop-blur-md p-2 flex items-center justify-center">
-                  <img
-                    src="https://i.imgur.com/JFHjdNr.jpeg"
-                    alt="Featured Product"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-              </div>
-
-              {/* Orbiting Features */}
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    transform: `rotate(${feature.position}deg) translateX(10rem) rotate(-${feature.position}deg)`,
-                  }}
-                  onMouseEnter={() => setHoverIndex(index)}
-                  onMouseLeave={() => setHoverIndex(null)}
-                >
-                  <div
-                    className={`w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-xs text-white text-center font-medium transition-all duration-300 ${
-                      hoverIndex === index ? "scale-110 bg-white/30" : ""
-                    }`}
-                  >
-                    {feature.text}
+            {/* Stats */}
+            <div className="flex gap-12 pt-8 border-t border-white/10 mt-8">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl md:text-4xl font-serif font-semibold text-gradient-gold">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-white/50 mt-1 tracking-wide">
+                    {stat.label}
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
 
-              {/* Rotation Controls */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-4">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="rounded-full border-white/50 bg-white/10 text-white hover:bg-white/20"
-                  onClick={() => setRotation((prev) => (prev - 10) % 360)}
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="rounded-full border-white/50 bg-white/10 text-white hover:bg-white/20"
-                  onClick={() => setRotation((prev) => (prev + 10) % 360)}
-                >
-                  <RotateCw className="h-4 w-4" />
-                </Button>
+          {/* Right Side - Featured Product Card */}
+          <div className={`hidden lg:block ${isLoaded ? 'animate-fade-in-right' : 'opacity-0'}`} style={{ animationDelay: '0.4s' }}>
+            <div className="relative">
+              {/* Decorative Ring */}
+              <div className="absolute -inset-4 border border-amber-500/20 rounded-3xl animate-spin-slow" style={{ animationDuration: '30s' }} />
+
+              {/* Main Card */}
+              <div className="glass rounded-3xl p-8 space-y-6">
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
+                  <img
+                    src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800"
+                    alt="Featured Product"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+                  {/* Product Info Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-amber-500 text-sm font-medium tracking-wider uppercase">Featured</p>
+                        <h3 className="text-white text-xl font-serif mt-1">Autumn Collection</h3>
+                      </div>
+                      <div className="glass-gold rounded-full p-3 cursor-pointer hover:scale-110 transition-transform">
+                        <ArrowRight className="w-5 h-5 text-amber-500" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="flex justify-between text-center">
+                  <div>
+                    <p className="text-2xl font-serif text-white">124</p>
+                    <p className="text-xs text-white/50 uppercase tracking-wider">New Items</p>
+                  </div>
+                  <div className="w-px bg-white/10" />
+                  <div>
+                    <p className="text-2xl font-serif text-white">48</p>
+                    <p className="text-xs text-white/50 uppercase tracking-wider">Brands</p>
+                  </div>
+                  <div className="w-px bg-white/10" />
+                  <div>
+                    <p className="text-2xl font-serif text-white">5</p>
+                    <p className="text-xs text-white/50 uppercase tracking-wider">Categories</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
-          <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 text-center border border-white/20 hover:scale-105 transition-transform">
-            <h3 className="text-lg font-semibold mb-2">Free Shipping</h3>
-            <p className="text-white/70">On all orders above $50</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 text-center border border-white/20 hover:scale-105 transition-transform">
-            <h3 className="text-lg font-semibold mb-2">Hassle-Free Returns</h3>
-            <p className="text-white/70">30-day return policy</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 text-center border border-white/20 hover:scale-105 transition-transform">
-            <h3 className="text-lg font-semibold mb-2">Secure Checkout</h3>
-            <p className="text-white/70">Protected payments & privacy</p>
-          </div>
+      {/* Slide Indicators */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`transition-all duration-500 rounded-full ${
+              index === currentSlide
+                ? "w-12 h-2 bg-amber-500"
+                : "w-2 h-2 bg-white/30 hover:bg-white/50"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 right-8 z-20 hidden md:flex flex-col items-center gap-2">
+        <span className="text-xs text-white/50 tracking-widest uppercase rotate-90 origin-center translate-y-8">
+          Scroll
+        </span>
+        <div className="scroll-indicator mt-12" />
+      </div>
+
+      {/* Side Text */}
+      <div className="absolute left-8 top-1/2 -translate-y-1/2 z-20 hidden xl:block">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-px h-20 bg-gradient-to-b from-transparent via-amber-500/50 to-transparent" />
+          <span className="text-xs text-white/50 tracking-widest uppercase" style={{ writingMode: 'vertical-rl' }}>
+            Debutify 2025
+          </span>
+          <div className="w-px h-20 bg-gradient-to-b from-transparent via-amber-500/50 to-transparent" />
         </div>
       </div>
     </section>

@@ -1,14 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  ShoppingCart as CartIcon, 
-  X, 
-  Plus, 
-  Minus, 
-  ShoppingBag, 
-  ArrowRight, 
-  Trash2 
+import {
+  ShoppingBag,
+  Plus,
+  Minus,
+  ArrowRight,
+  Trash2,
+  Sparkles
 } from "lucide-react";
 import {
   Sheet,
@@ -19,44 +17,39 @@ import {
 } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock cart items
 const initialCartItems = [
   {
     id: 1,
-    name: "Premium Cotton T-Shirt",
-    price: 29.99,
-    color: "Black",
+    name: "Silk Evening Gown",
+    price: 289.99,
+    color: "Champagne",
     size: "M",
     quantity: 1,
-    image: "https://i.imgur.com/JFHjdNr.jpeg",
+    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400",
   },
   {
     id: 2,
-    name: "Slim Fit Denim Jeans",
-    price: 59.99,
-    color: "Blue",
-    size: "32",
+    name: "Tailored Wool Blazer",
+    price: 459.99,
+    color: "Charcoal",
+    size: "L",
     quantity: 1,
-    image: "https://i.imgur.com/kGu7c6H.jpeg",
+    image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=400",
   }
 ];
 
-// Create a global cart state
 let globalCartItems = [...initialCartItems];
 let globalCartListeners: Function[] = [];
 
-// Function to update global cart
 export const updateGlobalCart = (items: typeof initialCartItems) => {
   globalCartItems = [...items];
   globalCartListeners.forEach(listener => listener(globalCartItems));
 };
 
-// Function to add item to cart
 export const addToCart = (product: any) => {
   const existingItemIndex = globalCartItems.findIndex(item => item.id === product.id);
-  
+
   if (existingItemIndex >= 0) {
-    // If item exists, increase quantity
     const updatedItems = [...globalCartItems];
     updatedItems[existingItemIndex] = {
       ...updatedItems[existingItemIndex],
@@ -64,7 +57,6 @@ export const addToCart = (product: any) => {
     };
     updateGlobalCart(updatedItems);
   } else {
-    // If item doesn't exist, add it with quantity 1
     const newItem = {
       id: product.id,
       name: product.name,
@@ -76,7 +68,7 @@ export const addToCart = (product: any) => {
     };
     updateGlobalCart([...globalCartItems, newItem]);
   }
-  
+
   return true;
 };
 
@@ -85,14 +77,13 @@ const ShoppingCart = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  // Subscribe to global cart changes
   useEffect(() => {
     const handleCartChange = (items: typeof initialCartItems) => {
       setCartItems([...items]);
     };
-    
+
     globalCartListeners.push(handleCartChange);
-    
+
     return () => {
       globalCartListeners = globalCartListeners.filter(listener => listener !== handleCartChange);
     };
@@ -100,11 +91,11 @@ const ShoppingCart = () => {
 
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
-    
-    const updatedItems = cartItems.map(item => 
+
+    const updatedItems = cartItems.map(item =>
       item.id === id ? { ...item, quantity: newQuantity } : item
     );
-    
+
     setCartItems(updatedItems);
     updateGlobalCart(updatedItems);
   };
@@ -113,30 +104,29 @@ const ShoppingCart = () => {
     const updatedItems = cartItems.filter(item => item.id !== id);
     setCartItems(updatedItems);
     updateGlobalCart(updatedItems);
-    
+
     toast({
       title: "Item removed",
-      description: "The item has been removed from your cart.",
+      description: "The item has been removed from your bag.",
     });
   };
 
   const clearCart = () => {
     setCartItems([]);
     updateGlobalCart([]);
-    
+
     toast({
-      title: "Cart cleared",
-      description: "All items have been removed from your cart.",
+      title: "Bag cleared",
+      description: "All items have been removed.",
     });
   };
 
   const checkout = () => {
     toast({
       title: "Proceeding to checkout",
-      description: "This would normally redirect to a checkout page.",
+      description: "Redirecting to secure payment...",
     });
-    
-    // Close the cart drawer after a short delay
+
     setTimeout(() => {
       setIsOpen(false);
     }, 1000);
@@ -146,127 +136,165 @@ const ShoppingCart = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  
-  const shipping = subtotal > 50 ? 0 : 4.99;
+
+  const shipping = subtotal > 200 ? 0 : 15.99;
   const total = subtotal + shipping;
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <CartIcon className="h-5 w-5" />
-          {cartItems.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-              {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+        <Button variant="ghost" size="icon" className="relative rounded-full">
+          <ShoppingBag className="h-5 w-5" />
+          {totalItems > 0 && (
+            <span className="absolute -top-1 -right-1 bg-amber-500 text-black rounded-full w-5 h-5 text-xs font-medium flex items-center justify-center">
+              {totalItems}
             </span>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md flex flex-col h-full">
-        <SheetHeader className="border-b pb-4">
-          <SheetTitle className="flex items-center">
-            <ShoppingBag className="mr-2 h-5 w-5" />
-            Your Cart
-            {cartItems.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-slate-500">
-                ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)
+      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-background border-border">
+        <SheetHeader className="border-b border-border pb-6">
+          <SheetTitle className="flex items-center font-serif text-xl">
+            <ShoppingBag className="mr-3 h-5 w-5 text-amber-500" />
+            Shopping Bag
+            {totalItems > 0 && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground font-sans">
+                ({totalItems} {totalItems === 1 ? 'item' : 'items'})
               </span>
             )}
           </SheetTitle>
         </SheetHeader>
-        
+
         {cartItems.length > 0 ? (
           <>
-            <div className="flex-1 overflow-auto py-4">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-auto py-6">
+              <div className="space-y-6">
                 {cartItems.map(item => (
-                  <div key={item.id} className="flex gap-4 py-2 border-b border-slate-200 dark:border-slate-700">
-                    <div className="w-20 h-20 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-                      <img 
-                        src={item.image} 
-                        alt={item.name} 
+                  <div key={item.id} className="flex gap-4 pb-6 border-b border-border last:border-0">
+                    <div className="w-24 h-28 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
+                      <img
+                        src={item.image}
+                        alt={item.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium">{item.name}</h3>
-                      <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-                        {item.color}, Size {item.size}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-medium font-serif">{item.name}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {item.color} · Size {item.size}
+                        </p>
                       </div>
-                      <div className="font-medium">${item.price.toFixed(2)}</div>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center border rounded-md">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-none"
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center glass rounded-full">
+                          <button
+                            className="p-2 hover:text-amber-500 transition-colors disabled:opacity-50"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                             disabled={item.quantity <= 1}
                           >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-8 text-center text-sm">{item.quantity}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-none"
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                          <button
+                            className="p-2 hover:text-amber-500 transition-colors"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
-                            <Plus className="h-3 w-3" />
-                          </Button>
+                            <Plus className="h-4 w-4" />
+                          </button>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-500 hover:text-red-500"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+
+                        <div className="flex items-center gap-3">
+                          <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                          <button
+                            className="p-2 text-muted-foreground hover:text-red-500 transition-colors"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-4">
-              <div className="space-y-2">
+
+            <div className="border-t border-border pt-6 space-y-6">
+              {/* Free Shipping Progress */}
+              {subtotal < 200 && (
+                <div className="glass rounded-xl p-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="text-muted-foreground">
+                      Add ${(200 - subtotal).toFixed(2)} for free shipping
+                    </span>
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((subtotal / 200) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Summary */}
+              <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span>Subtotal</span>
+                  <span className="text-muted-foreground">Subtotal</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Shipping</span>
-                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className={shipping === 0 ? 'text-amber-500' : ''}>
+                    {shipping === 0 ? "Complimentary" : `$${shipping.toFixed(2)}`}
+                  </span>
                 </div>
-                <div className="flex justify-between font-medium pt-2 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between font-semibold text-lg pt-3 border-t border-border">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={clearCart}>
-                  Clear Cart
+
+              {/* Actions */}
+              <div className="space-y-3">
+                <Button
+                  onClick={checkout}
+                  className="w-full btn-luxury rounded-full py-6 text-base font-medium"
+                >
+                  <span className="relative z-10 flex items-center">
+                    Checkout
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </span>
                 </Button>
-                <Button onClick={checkout}>
-                  Checkout <ArrowRight className="ml-2 h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  onClick={clearCart}
+                  className="w-full text-muted-foreground hover:text-foreground"
+                >
+                  Clear Bag
                 </Button>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-            <div className="bg-slate-100 dark:bg-slate-800 rounded-full p-6">
-              <ShoppingBag className="h-10 w-10 text-slate-400" />
+          <div className="flex-1 flex flex-col items-center justify-center space-y-6 py-12">
+            <div className="glass rounded-full p-8">
+              <ShoppingBag className="h-12 w-12 text-amber-500/50" />
             </div>
-            <h3 className="font-medium text-xl">Your cart is empty</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-center max-w-xs">
-              Looks like you haven't added anything to your cart yet. Start shopping to fill it up!
-            </p>
-            <Button onClick={() => setIsOpen(false)}>
-              Continue Shopping
+            <div className="text-center space-y-2">
+              <h3 className="font-serif text-xl font-medium">Your bag is empty</h3>
+              <p className="text-muted-foreground max-w-xs">
+                Discover our curated collection and add your favorites to the bag.
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsOpen(false)}
+              className="btn-luxury rounded-full px-8 py-6"
+            >
+              <span className="relative z-10">Continue Shopping</span>
             </Button>
           </div>
         )}
